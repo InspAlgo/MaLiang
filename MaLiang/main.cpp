@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     mv.start();
     splash.show();
     splash.setCursor(Qt::BlankCursor);
-    for(int i = 0; i < 10; i += mv.speed())
+    for(int i = 0; i < 100; i += mv.speed())
     {
         QCoreApplication::processEvents();
         Sleep(mv.speed());

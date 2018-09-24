@@ -4,124 +4,77 @@
 #include <QPainter>
 #include <QDebug>
 
-static const int IMAGE_WIDTH = 400;
-static const int IMAGE_HEIGHT = 300;
-static const QSize IMAGE_SIZE = QSize(IMAGE_WIDTH, IMAGE_HEIGHT);
-
 WorkingArea::WorkingArea(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::WorkingArea)
 {
     ui->setupUi(this);
 
-    this->m_pixmap = QPixmap(IMAGE_SIZE);
-    this->m_pixmap.fill();
-    this->m_scale = 1.0;
-    this->m_mode = FIXED_SIZE;
-    this->m_brush = QBrush(Qt::white);
+    this->image = new QImage();
+
+    this->image_label = new QLabel(this);
+    this->image_label->setScaledContents(true);  // 设置控件上图片显示大小的属性为自适应控件
+
+    this->scroll_area = new QScrollArea(this);
+    this->scroll_area->setGeometry(0, 0, this->width(), this->height());  // 设置控件大小和工作区
+    this->scroll_area->setBackgroundRole(QPalette::Dark);  // 背景色
+    this->scroll_area->setWidget(this->image_label);
+    this->scroll_area->setAlignment(Qt::AlignCenter);  // 居中对齐
 }
 
 WorkingArea::~WorkingArea()
 {
     delete[] this->buffer;
+    delete this->image;
+    delete this->image_label;
     delete ui;
 }
 
-void WorkingArea::setBackground(QBrush brush)
+bool WorkingArea::InitImage()
 {
-    this->m_brush = brush;
-    update();
-}
+    // 导入图片的二进制流
+    this->image->loadFromData(this->buffer, this->image_size);
+    // 导入图片到显示控件
+    this->image_label->setPixmap(QPixmap::fromImage(*(this->image)));
 
-void WorkingArea::setMode(PB_MODE mode)
-{
-    this->m_mode = mode;
-    if(this->m_mode == AUTO_SIZE)
-        this->setFixedSize(this->m_pixmap.size() * this->m_scale);
+    // 调整控件大小
+    int label_width, label_height;
+    double height_width = (double)this->image->width() / (double)this->image->height();
+
+    if(this->image->width() < this->width() -10)
+        label_width = this->image->width();
     else
-    {
-        this->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-        this->setMinimumSize(0, 0);
-    }
-    update();
-}
+        label_width = 0;
+    if(this->image->height() < this->height() -10)
+        label_height = this->image->height();
+    else
+        label_height = 0;
 
-bool WorkingArea::setImage(QImage &image, double scale)
-{
-    if(image.isNull())
-        return false;
-    this->m_pixmap = QPixmap::fromImage(image);
-    this->m_scale = qBound(0.01, scale, 100.0);
-    if(this->m_mode == AUTO_SIZE)
-        this->setFixedSize(this->m_pixmap.size() * this->m_scale);
-    update();
+    if(label_width == 0 || label_height == 0)
+    {
+        label_height = this->height() -10;
+        label_width = int(label_height * height_width);
+
+        for(;label_height >= this->height() - 10 || label_width >= this->width() -10;)
+        {
+            label_height--;
+            label_width = int(label_height * height_width);
+        }
+    }
+
+    this->image_label->resize(label_width, label_height);
+
+    this->is_saved = 0;
     return true;
 }
 
-void WorkingArea::changeScale(double change)
+int WorkingArea::SaveImage(QString save_path)
 {
-    this->m_scale += change;
+    if(this->is_saved == 0)
+        return 0;
 
-    if(this->m_scale <= 0)
-        this->m_scale = 0;
+    this->image->save(save_path);
+    this->is_saved = 0;
 
-    QPainter painter(this);
-    painter.setBackground(this->m_brush);
-    painter.eraseRect(rect());
-    painter.scale(this->m_scale, this->m_scale);
-    painter.drawPixmap(0, 0, this->m_pixmap);
-
-    update();
-}
-
-void WorkingArea::paintEvent(QPaintEvent * event)
-{
-    Q_UNUSED(event);
-    QPainter painter(this);
-    painter.setBackground(this->m_brush);
-    painter.eraseRect(rect());
-
-    double window_width, window_height;
-    double image_width, image_height;
-    double r1, r2, r;
-    int offset_x, offset_y;
-
-    switch (this->m_mode)
-    {
-        case FIXED_SIZE:
-        case AUTO_SIZE:
-            painter.scale(this->m_scale, this->m_scale);
-            painter.drawPixmap(0, 0, this->m_pixmap);
-            break;
-
-        case FIX_SIZE_CENTRED:
-            window_width = width();
-            window_height = height();
-            image_width = this->m_pixmap.width();
-            image_height = this->m_pixmap.height();
-            offset_x = (window_width - this->m_scale * image_width) / 2;
-            offset_y = (window_height - this->m_scale * image_height) / 2;
-            painter.translate(offset_x, offset_y);
-            painter.scale(this->m_scale, this->m_scale);
-            painter.drawPixmap(0, 0, this->m_pixmap);
-            break;
-
-        case AUTO_ZOOM:
-            window_width = width();
-            window_height = height();
-            image_width = this->m_pixmap.width();
-            image_height = this->m_pixmap.height();
-            r1 = window_width / image_width;
-            r2 = window_height / image_height;
-            r = qMin(r1, r2);
-            offset_x = (window_width - r * image_width) / 2;
-            offset_y = (window_height - r * image_height) / 2;
-            painter.translate(offset_x, offset_y);
-            painter.scale(r, r);
-            painter.drawPixmap(0, 0, this->m_pixmap);
-            break;
-
-        default:
-            break;
-    }
+    return 0;
 }

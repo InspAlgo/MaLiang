@@ -22,8 +22,12 @@ public:
     ~MainUI();
 
 public slots:
+    void FileCreate();
     void FileOpen();
+    void FileSave();
+    void FileSaveAs();
     void FileClose();
+    void FileCloseAll();
 
     void ToolMagnify();
     void ToolReduce();

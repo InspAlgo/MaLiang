@@ -5,6 +5,8 @@
 #include <QString>
 #include <QImage>
 #include <QPixmap>
+#include <QLabel>
+#include <QScrollArea>
 
 namespace Ui {
 class WorkingArea;
@@ -18,26 +20,22 @@ public:
     explicit WorkingArea(QWidget *parent = 0);
     ~WorkingArea();
 
-    enum PB_MODE {FIXED_SIZE, FIX_SIZE_CENTRED, AUTO_ZOOM, AUTO_SIZE};
-    QString image_path;
+    bool InitImage();
+    int SaveImage(QString save_path);
+    int is_saved;
     unsigned char *buffer;
-
-    void setMode(PB_MODE mode);
-    void changeScale(double change);
-
+    unsigned long image_size;
+    QString image_path;
+    int image_type;
 public slots:
-    bool setImage(QImage &image, double scale = 1.0);
-    void setBackground(QBrush brush);
 
-protected:
-        void paintEvent(QPaintEvent * event);
+
 private:
     Ui::WorkingArea *ui;
 
-    QPixmap m_pixmap;
-    double m_scale;
-    PB_MODE m_mode;
-    QBrush m_brush;
+    QImage *image;
+    QLabel *image_label;
+    QScrollArea *scroll_area;
 };
 
 #endif // WORKINGAREA_H
