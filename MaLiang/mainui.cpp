@@ -4,6 +4,9 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QImage>
+#include <QSpinBox>
+#include <QWidget>
+
 
 #include <iostream>
 #include <string>
@@ -34,10 +37,9 @@ MainUI::MainUI(QWidget *parent) :
     connect(this->file_close_all, SIGNAL(triggered()), this, SLOT(FileCloseAll()));
 
     this->tool = addToolBar(tr("工具"));
-    this->tool_magnify = this->tool->addAction(tr("放大"));
-    this->tool_reduce = this->tool->addAction(tr("缩小"));
-    connect(this->tool_magnify, SIGNAL(triggered()), this, SLOT(ToolMagnify()));
-    connect(this->tool_reduce, SIGNAL(triggered()), this, SLOT(ToolReduce()));
+    this->change_widget = NULL;
+    this->tool_change_size = this->tool->addAction(QIcon(":/res/change_size1.png"), tr("调整大小"));
+    connect(this->tool_change_size, SIGNAL(triggered()), this, SLOT(ToolChangeSize()));
 }
 
 MainUI::~MainUI()
@@ -170,6 +172,12 @@ void MainUI::FileClose()
     if(this->working_area == NULL)
         return;
 
+    if(this->change_widget != NULL)
+    {
+        delete this->change_widget;
+        this->change_widget = NULL;
+    }
+
     if(this->working_area->is_saved != 0)
     {
         QMessageBox::about(NULL,tr("Warning"), tr("请先保存图片！"));
@@ -182,10 +190,10 @@ void MainUI::FileClose()
 
 void MainUI::FileCloseAll()
 {
-
+    // 遍历工作区列表，关闭所有打开的工作区
 }
 
-void MainUI::ToolMagnify()
+void MainUI::ToolChangeSize()
 {
     if(this->working_area == NULL)
     {
@@ -193,15 +201,59 @@ void MainUI::ToolMagnify()
         return;
     }
 
-}
-
-void MainUI::ToolReduce()
-{
-    if(this->working_area == NULL)
+    if(this->change_widget != NULL)
     {
-        QMessageBox::about(NULL,tr("Error"), tr("尚未打开图片！"));
+        delete this->change_widget;
+        this->change_widget = NULL;
         return;
     }
 
+    QString slider_qss = "QSlider::groove:horizontal {"
+                            "height: 6px;"
+                            "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(124, 124, 124), stop: 1.0 rgb(72, 71, 71));"
+                          "}"
+                           "QSlider::handle:horizontal {"
+                                  "width: 10px;"
+                                  "background: rgb(0, 160, 230);"
+                                  "margin: -6px 0px -6px 0px;"
+                                  "border-radius: 15px;"
+                            "}";
+    int nMin = 10;  // 最小值
+    int nMax = 1000;  // 最大值
+    int nSingleStep = 5;  // 步长
+
+    this->change_widget = new QLabel(this);
+    this->change_widget->setFixedSize(300, 30);  // 禁止改变窗口大小
+    QSpinBox *pSpinBox = new QSpinBox(this->change_widget);
+    pSpinBox->setMinimum(nMin);  // 最小值
+    pSpinBox->setMaximum(nMax);  // 最大值
+    pSpinBox->setSingleStep(nSingleStep);  // 步长
+    pSpinBox->setSuffix("%");
+
+    QSlider *pSlider = new QSlider(this->change_widget);
+    pSlider->setOrientation(Qt::Horizontal);  // 水平方向
+    pSlider->setMinimum(nMin);  // 最小值
+    pSlider->setMaximum(nMax);  // 最大值
+    pSlider->setSingleStep(nSingleStep);  // 步长
+
+    connect(pSpinBox, SIGNAL(valueChanged(int)), pSlider, SLOT(setValue(int)));
+    connect(pSlider, SIGNAL(valueChanged(int)), pSpinBox, SLOT(setValue(int)));
+    connect(pSpinBox, SIGNAL(valueChanged(int)), this, SLOT(ChangeSize(int)));
+
+    pSpinBox->setValue(100);
+    pSlider->setStyleSheet(slider_qss);  // 加载样式
+
+    pSpinBox->resize(80,30);
+    pSpinBox->move(0, 0);
+    pSlider->resize(200, 30);
+    pSlider->move(90, 0);
+
+    change_widget->move(0, this->menu->height() + this->tool->height());
+    change_widget->show();
 }
 
+void MainUI::ChangeSize(int val)
+{
+    double scale = double(val) / double(100);
+    this->working_area->ChangeLabelSize(scale);
+}

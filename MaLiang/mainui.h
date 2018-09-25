@@ -6,6 +6,9 @@
 #include <QMenuBar>
 #include <QAction>
 #include <QToolBar>
+#include <QLabel>
+#include <QSpinBox>
+#include <QSlider>
 
 #include "workingarea.h"
 
@@ -29,10 +32,12 @@ public slots:
     void FileClose();
     void FileCloseAll();
 
-    void ToolMagnify();
-    void ToolReduce();
+    void ToolChangeSize();
+    void ChangeSize(int val);
 
 private:
+
+
     Ui::MainUI *ui;
 
     QMenuBar *menu;  // 菜单栏
@@ -46,8 +51,8 @@ private:
     QAction *file_close;  // 文件-关闭
     QAction *file_close_all;  // 文件-关闭所有
 
-    QAction *tool_magnify;  // 工具-放大图片
-    QAction *tool_reduce;  // 工具-缩小图片
+    QAction *tool_change_size;
+    QLabel *change_widget;
 
     WorkingArea *working_area;  // 工作区，用来显示图片，也是编辑操作窗口
 };

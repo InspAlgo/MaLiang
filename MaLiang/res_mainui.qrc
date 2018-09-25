@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>res/brush.ico</file>
+        <file>res/change_size1.png</file>
+        <file>res/change_size2.png</file>
     </qresource>
 </RCC>

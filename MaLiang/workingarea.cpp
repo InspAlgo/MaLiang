@@ -38,32 +38,10 @@ bool WorkingArea::InitImage()
     this->image_label->setPixmap(QPixmap::fromImage(*(this->image)));
 
     // 调整控件大小
-    int label_width, label_height;
-    double height_width = (double)this->image->width() / (double)this->image->height();
-
-    if(this->image->width() < this->width() -10)
-        label_width = this->image->width();
-    else
-        label_width = 0;
-    if(this->image->height() < this->height() -10)
-        label_height = this->image->height();
-    else
-        label_height = 0;
-
-    if(label_width == 0 || label_height == 0)
-    {
-        label_height = this->height() -10;
-        label_width = int(label_height * height_width);
-
-        for(;label_height >= this->height() - 10 || label_width >= this->width() -10;)
-        {
-            label_height--;
-            label_width = int(label_height * height_width);
-        }
-    }
-
-    this->image_label->resize(label_width, label_height);
-
+    this->width_height = (double)this->image->width() / (double)this->image->height();
+    this->AutoSize();  // 使用自适应大小模式
+    this->auto_height = this->image_label->height();
+    this->auto_width = this->image_label->width();
     this->is_saved = 0;
     return true;
 }
@@ -77,4 +55,39 @@ int WorkingArea::SaveImage(QString save_path)
     this->is_saved = 0;
 
     return 0;
+}
+
+void WorkingArea::AutoSize()
+{
+    int label_width, label_height;
+    if(this->image->width() < this->width() -10)
+        label_width = this->image->width();
+    else
+        label_width = 0;
+    if(this->image->height() < this->height() -10)
+        label_height = this->image->height();
+    else
+        label_height = 0;
+
+    if(label_width == 0 || label_height == 0)
+    {
+        label_height = this->height() -10;
+        label_width = int(label_height * this->width_height);
+
+        for(;label_height >= this->height() - 10 || label_width >= this->width() -10;)
+        {
+            label_height--;
+            label_width = int(label_height * this->width_height);
+        }
+    }
+
+    this->image_label->resize(label_width, label_height);
+}
+
+void WorkingArea::ChangeLabelSize(double scale)
+{
+    int new_height = int(this->auto_height * scale);
+    int new_width =  int(this->width_height * new_height);
+
+    this->image_label->resize(new_width, new_height);
 }
