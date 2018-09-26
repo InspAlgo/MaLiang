@@ -32,6 +32,9 @@ public slots:
     void FileClose();
     void FileCloseAll();
 
+    void PatternGray();
+    void Pattern8BitSlice();
+
     void ToolChangeSize();
     void ChangeSize(int val);
 
@@ -50,6 +53,10 @@ private:
     QAction *file_save_as;  // 文件-另存为
     QAction *file_close;  // 文件-关闭
     QAction *file_close_all;  // 文件-关闭所有
+
+    QMenu *menu_pattern;  // 模式
+    QAction *pattern_gray;  // 模式-灰度
+    QAction *pattern_8bit_slice;  // 模式-切片
 
     QAction *tool_change_size;
     QLabel *change_widget;

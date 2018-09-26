@@ -36,6 +36,12 @@ MainUI::MainUI(QWidget *parent) :
     connect(this->file_close, SIGNAL(triggered()), this, SLOT(FileClose()));
     connect(this->file_close_all, SIGNAL(triggered()), this, SLOT(FileCloseAll()));
 
+    this->menu_pattern = this->menu->addMenu(tr("模式"));
+    this->pattern_gray = this->menu_pattern->addAction(tr("灰度"));
+    this->pattern_8bit_slice = this->menu_pattern->addAction(tr("8位切片"));
+    connect(this->pattern_gray, SIGNAL(triggered()), this, SLOT(PatternGray()));
+    connect(this->pattern_8bit_slice, SIGNAL(triggered()), this, SLOT(Pattern8BitSlice()));
+
     this->tool = addToolBar(tr("工具"));
     this->change_widget = NULL;
     this->tool_change_size = this->tool->addAction(QIcon(":/res/change_size1.png"), tr("调整大小"));
@@ -256,4 +262,20 @@ void MainUI::ChangeSize(int val)
 {
     double scale = double(val) / double(100);
     this->working_area->ChangeLabelSize(scale);
+}
+
+void MainUI::PatternGray()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->RGB2Gray();
+}
+
+void MainUI::Pattern8BitSlice()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->Bit8Slice();
 }

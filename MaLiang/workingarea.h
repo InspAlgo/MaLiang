@@ -23,6 +23,8 @@ public:
     bool InitImage();
     int SaveImage(QString save_path);
     void ChangeLabelSize(double scale);
+    void RGB2Gray();
+    void Bit8Slice();
 
     int is_saved;  // 状态类型
     unsigned char *buffer;

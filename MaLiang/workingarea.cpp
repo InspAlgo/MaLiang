@@ -48,10 +48,7 @@ bool WorkingArea::InitImage()
 
 int WorkingArea::SaveImage(QString save_path)
 {
-    if(this->is_saved == 0)
-        return 0;
-
-    this->image->save(save_path);
+    this->image_label->pixmap()->toImage().save(save_path);
     this->is_saved = 0;
 
     return 0;
@@ -90,4 +87,50 @@ void WorkingArea::ChangeLabelSize(double scale)
     int new_width =  int(this->width_height * new_height);
 
     this->image_label->resize(new_width, new_height);
+}
+
+void WorkingArea::RGB2Gray()
+{
+    int old_height = this->image->height();
+    int old_width = this->image->width();
+
+    QImage gray_img(old_width, old_height, QImage::Format_Indexed8);  //  8 位图
+    gray_img.setColorCount(256);  // 256 种颜色
+
+    for(int i = 0; i < 256; i++)
+        gray_img.setColor(i, qRgb(i, i, i));  // 颜色表
+
+    switch (this->image->format())
+    {
+        case QImage::Format_Indexed8:
+            for(int i = 0; i < old_height; i++)
+            {
+                const uchar *p_src = (uchar * )this->image->constScanLine(i);
+                uchar *p_dest = (uchar *)gray_img.scanLine(i);
+                memcpy(p_dest, p_src, old_width);
+            }
+            break;
+        case QImage::Format_RGB32:
+        case QImage::Format_ARGB32:
+        case QImage::Format_ARGB32_Premultiplied:
+            for(int i = 0; i < old_height; i++)
+            {
+                const QRgb *p_src = (QRgb *)this->image->constScanLine(i);
+                uchar *p_dest = (uchar *)gray_img.scanLine(i);
+
+                for(int j =0; j <old_width; j++)
+                    p_dest[j] = qGray(p_src[j]);
+            }
+            break;
+        default:
+            break;
+    }
+
+    this->image_label->setPixmap(QPixmap::fromImage(gray_img));
+}
+
+void WorkingArea::Bit8Slice()
+{
+
+
 }
