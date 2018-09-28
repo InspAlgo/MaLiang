@@ -29,18 +29,24 @@ MainUI::MainUI(QWidget *parent) :
     this->file_save_as = this->menu_file->addAction(tr("另存为"));
     this->file_close = this->menu_file->addAction(tr("关闭"));
     this->file_close_all = this->menu_file->addAction(tr("关闭所有"));
-    connect(this->file_create, SIGNAL(triggered()), this, SLOT(FileCreate()));
-    connect(this->file_open, SIGNAL(triggered()), this, SLOT(FileOpen()));  // Action 应使用 triggered() 信号
-    connect(this->file_save, SIGNAL(triggered()), this, SLOT(FileSave()));
-    connect(this->file_save_as, SIGNAL(triggered()), this, SLOT(FileSaveAs()));
-    connect(this->file_close, SIGNAL(triggered()), this, SLOT(FileClose()));
-    connect(this->file_close_all, SIGNAL(triggered()), this, SLOT(FileCloseAll()));
+    connect(this->file_create, SIGNAL(triggered(bool)), this, SLOT(FileCreate()));
+    connect(this->file_open, SIGNAL(triggered(bool)), this, SLOT(FileOpen()));  // Action 应使用 triggered() 信号
+    connect(this->file_save, SIGNAL(triggered(bool)), this, SLOT(FileSave()));
+    connect(this->file_save_as, SIGNAL(triggered(bool)), this, SLOT(FileSaveAs()));
+    connect(this->file_close, SIGNAL(triggered(bool)), this, SLOT(FileClose()));
+    connect(this->file_close_all, SIGNAL(triggered(bool)), this, SLOT(FileCloseAll()));
 
     this->menu_pattern = this->menu->addMenu(tr("模式"));
     this->pattern_gray = this->menu_pattern->addAction(tr("灰度"));
     this->pattern_8bit_slice = this->menu_pattern->addAction(tr("8位切片"));
-    connect(this->pattern_gray, SIGNAL(triggered()), this, SLOT(PatternGray()));
-    connect(this->pattern_8bit_slice, SIGNAL(triggered()), this, SLOT(Pattern8BitSlice()));
+    this->pattern_select_thresholding = this->menu_pattern->addAction(tr("二值化"));
+    this->pattern_floyd_steinberg = this->menu_pattern->addAction(tr("Floyd-Steinberg抖动"));
+    this->pattern_to_txt = this->menu_pattern->addAction(tr("txt字符画"));
+    connect(this->pattern_gray, SIGNAL(triggered(bool)), this, SLOT(PatternGray()));
+    connect(this->pattern_8bit_slice, SIGNAL(triggered(bool)), this, SLOT(Pattern8BitSlice()));
+    connect(this->pattern_select_thresholding, SIGNAL(triggered(bool)), this, SLOT(PatternSelectThresholding()));
+    connect(this->pattern_floyd_steinberg, SIGNAL(triggered(bool)), this, SLOT(PatternFloydSteinberg()));
+    connect(this->pattern_to_txt, SIGNAL(triggered(bool)), this, SLOT(PatternToTxt()));
 
     this->tool = addToolBar(tr("工具"));
     this->change_widget = NULL;
@@ -278,4 +284,81 @@ void MainUI::Pattern8BitSlice()
         return;
 
     this->working_area->Bit8Slice();
+}
+
+void MainUI::PatternSelectThresholding()
+{
+    if(this->working_area == NULL)
+        return;
+
+    if(this->set_thresholding_widget != NULL)
+    {
+        delete this->set_thresholding_widget;
+        this->set_thresholding_widget = NULL;
+        return;
+    }
+
+    QString slider_qss = "QSlider::groove:horizontal {"
+                            "height: 6px;"
+                            "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(124, 124, 124), stop: 1.0 rgb(72, 71, 71));"
+                          "}"
+                           "QSlider::handle:horizontal {"
+                                  "width: 10px;"
+                                  "background: rgb(0, 160, 230);"
+                                  "margin: -6px 0px -6px 0px;"
+                                  "border-radius: 15px;"
+                            "}";
+    int nMin = 0;  // 最小值
+    int nMax = 255;  // 最大值
+    int nSingleStep = 1;  // 步长
+
+    this->set_thresholding_widget = new QLabel(this);
+    this->set_thresholding_widget->setFixedSize(300, 30);  // 禁止改变窗口大小
+    QSpinBox *pSpinBox = new QSpinBox(this->set_thresholding_widget);
+    pSpinBox->setMinimum(nMin);  // 最小值
+    pSpinBox->setMaximum(nMax);  // 最大值
+    pSpinBox->setSingleStep(nSingleStep);  // 步长
+
+    QSlider *pSlider = new QSlider(this->set_thresholding_widget);
+    pSlider->setOrientation(Qt::Horizontal);  // 水平方向
+    pSlider->setMinimum(nMin);  // 最小值
+    pSlider->setMaximum(nMax);  // 最大值
+    pSlider->setSingleStep(nSingleStep);  // 步长
+
+    connect(pSpinBox, SIGNAL(valueChanged(int)), pSlider, SLOT(setValue(int)));
+    connect(pSlider, SIGNAL(valueChanged(int)), pSpinBox, SLOT(setValue(int)));
+    connect(pSpinBox, SIGNAL(valueChanged(int)), this, SLOT(SetThresholding(int)));
+
+    pSpinBox->setValue(128);
+    pSlider->setStyleSheet(slider_qss);  // 加载样式
+
+    pSpinBox->resize(80,30);
+    pSpinBox->move(0, 0);
+    pSlider->resize(200, 30);
+    pSlider->move(90, 0);
+
+    this->set_thresholding_widget->move(320, this->menu->height() + this->tool->height());
+    this->set_thresholding_widget->show();
+}
+
+void MainUI::SetThresholding(int val)
+{
+    int offset = val - 128;
+    this->working_area->SelectThresholding(offset);
+}
+
+void MainUI::PatternFloydSteinberg()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->FloydSteinberg();
+}
+
+void MainUI::PatternToTxt()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->ToTxt();
 }

@@ -32,6 +32,12 @@ WorkingArea::~WorkingArea()
 
 bool WorkingArea::InitImage()
 {
+    // 获取图片名称及后缀类型
+    QFileInfo file_info(this->image_path);
+    this->path = file_info.path();
+    this->image_name = file_info.fileName();
+    this->file_type = file_info.suffix();
+
     // 导入图片的二进制流
     this->image->loadFromData(this->buffer, this->image_size);
     // 导入图片到显示控件
@@ -119,7 +125,7 @@ void WorkingArea::RGB2Gray()
                 uchar *p_dest = (uchar *)gray_img.scanLine(i);
 
                 for(int j =0; j <old_width; j++)
-                    p_dest[j] = qGray(p_src[j]);
+                    p_dest[j] = qGray(p_src[j]);  // (R*11+G*16+B*5)/32
             }
             break;
         default:
@@ -129,8 +135,140 @@ void WorkingArea::RGB2Gray()
     this->image_label->setPixmap(QPixmap::fromImage(gray_img));
 }
 
+void ThreadBit8Slice(QImage *temp, int bit, QString save_path)
+{
+    int width = temp->width();
+    int height = temp->height();
+
+    for(int i = 0; i < width; i++)
+    {
+        for(int j = 0; j < height; j++)
+        {
+            temp->setPixel(i, j,
+                ((temp->pixel(i, j)&(1 << bit)) == 0? qRgb(0,0,0):qRgb(255,255,255)));
+        }
+    }
+
+    temp->save(save_path);
+}
+
 void WorkingArea::Bit8Slice()
 {
+    QImage temp[8];
+    for(int i = 0; i < 8; i++)
+        temp[i] = *this->image;
 
+    std::thread *th[8];
+
+    QString save_path = this->path + "/" + this->image_name + "_8bit_slice_";
+    for(int bit = 0; bit < 8; bit++)
+    {
+        QString path = save_path + QString::number(bit) + "." + this->file_type;
+        th[bit] = new std::thread(ThreadBit8Slice, &temp[bit], bit, path);
+    }
+
+    for(int i = 0; i < 8; i++)
+        th[i]->join();
+    for(int i = 0; i < 8; i++)
+        delete th[i];
+}
+
+void WorkingArea::Patterning()
+{
+
+}
+
+void WorkingArea::SelectThresholding(int offset)
+{
+    int old_width = this->image->width();
+    int old_height = this->image->height();
+    QImage ret = *this->image;
+
+    for(int i = 0; i < old_width; i++)
+    {
+        for(int j = 0; j < old_height; j++)
+        {
+            ret.setPixel(i, j,
+                (ret.pixel(i, j) >= qRgb(128+offset,128+offset,128+offset)? qRgb(255,255,255):qRgb(0,0,0)));
+        }
+    }
+
+    this->image_label->setPixmap(QPixmap::fromImage(ret));
+}
+
+void WorkingArea::FloydSteinberg()
+{
+    int old_width = this->image->width();
+    int old_height = this->image->height();
+    QImage ret = *this->image;
+
+    int old_rgb,add_rgb;
+    for(int i = 0; i < old_width - 1; i++)
+    {
+       for(int j = 0; j < old_height - 1; j++)
+       {
+           int diff;
+           if(ret.pixel(i, j) > qRgb(128,128,128))
+           {
+               diff = qGray(ret.pixel(i, j)) - 255;
+               ret.setPixel(i, j, qRgb(255,255,255));
+           }
+           else
+           {
+               diff=qGray(ret.pixel(i, j));
+               ret.setPixel(i, j, qRgb(0,0,0));
+           }
+
+           old_rgb = qGray(ret.pixel(i+1, j));
+           add_rgb = old_rgb+diff*3/16;
+           ret.setPixel(i+1,j,qRgb(add_rgb,add_rgb,add_rgb));
+
+           old_rgb = qGray(ret.pixel(i, j+1));
+           add_rgb = old_rgb+diff*3/16;
+           ret.setPixel(i,j+1,qRgb(add_rgb,add_rgb,add_rgb));
+
+           old_rgb = qGray(ret.pixel(i+1, j+1));
+           add_rgb = old_rgb+diff*1/4;
+           ret.setPixel(i+1,j+1,qRgb(add_rgb,add_rgb,add_rgb));
+       }
+
+       ret.setPixel(i, old_height - 1,
+           (ret.pixel(i, old_height - 1) >= qRgb(128,128,128)? qRgb(255,255,255):qRgb(0,0,0)));
+    }
+
+    for(int j = 0; j < old_height; j++)
+       ret.setPixel(old_width - 1, j,
+           (ret.pixel(old_width - 1, j) >= qRgb(128,128,128)? qRgb(255,255,255):qRgb(0,0,0)));
+
+    this->image_label->setPixmap(QPixmap::fromImage(ret));
+}
+
+void WorkingArea::ToTxt()
+{
+    const char ch_txt[] = "@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'.";
+    QString save_path = this->path + "/" + this->image_name + "_2txt.txt";
+    int old_width = this->image->width();
+    int old_height = this->image->height();
+
+    std::string content = "";
+
+    for(int i = 0; i < old_height; i++)
+    {
+        for(int j = 0; j < old_width; j++)
+        {
+            int gray = qGray(this->image->pixel(j,i));
+            int gray_lever = 69.0/255.0*gray;
+            content += ch_txt[gray_lever];
+        }
+        content += "\n";
+    }
+
+    std::fstream file((char *)save_path.toStdString().data(), std::ios::out);
+    file << content;
+    file.close();
+}
+
+void WorkingArea::GetGrayHistogram()
+{
 
 }

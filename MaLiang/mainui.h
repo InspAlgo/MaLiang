@@ -34,9 +34,14 @@ public slots:
 
     void PatternGray();
     void Pattern8BitSlice();
+    void PatternSelectThresholding();
+    void PatternFloydSteinberg();
+    void PatternToTxt();
 
     void ToolChangeSize();
     void ChangeSize(int val);
+
+    void SetThresholding(int val);
 
 private:
 
@@ -57,9 +62,13 @@ private:
     QMenu *menu_pattern;  // 模式
     QAction *pattern_gray;  // 模式-灰度
     QAction *pattern_8bit_slice;  // 模式-切片
+    QAction *pattern_select_thresholding;  // 模式-阈值选择二值化
+    QAction *pattern_floyd_steinberg;  // 模式 - Floyd-Steinberg抖动
+    QAction *pattern_to_txt;  // 模式-txt字符画
 
     QAction *tool_change_size;
-    QLabel *change_widget;
+    QLabel *change_widget;  // 控制 image_label 大小的控件
+    QLabel *set_thresholding_widget;  // 设置二值化阈值的滑动条控件
 
     WorkingArea *working_area;  // 工作区，用来显示图片，也是编辑操作窗口
 };
