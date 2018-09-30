@@ -343,8 +343,7 @@ void MainUI::PatternSelectThresholding()
 
 void MainUI::SetThresholding(int val)
 {
-    int offset = val - 128;
-    this->working_area->SelectThresholding(offset);
+    this->working_area->SelectThresholding(val);
 }
 
 void MainUI::PatternFloydSteinberg()

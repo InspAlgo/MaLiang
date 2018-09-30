@@ -178,7 +178,7 @@ void WorkingArea::Patterning()
 
 }
 
-void WorkingArea::SelectThresholding(int offset)
+void WorkingArea::SelectThresholding(int val)
 {
     int old_width = this->image->width();
     int old_height = this->image->height();
@@ -189,7 +189,7 @@ void WorkingArea::SelectThresholding(int offset)
         for(int j = 0; j < old_height; j++)
         {
             ret.setPixel(i, j,
-                (ret.pixel(i, j) >= qRgb(128+offset,128+offset,128+offset)? qRgb(255,255,255):qRgb(0,0,0)));
+                (ret.pixel(i, j) > qRgb(val,val,val)? qRgb(255,255,255):qRgb(0,0,0)));
         }
     }
 

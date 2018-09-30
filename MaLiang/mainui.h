@@ -66,7 +66,7 @@ private:
     QAction *pattern_floyd_steinberg;  // 模式 - Floyd-Steinberg抖动
     QAction *pattern_to_txt;  // 模式-txt字符画
 
-    QAction *tool_change_size;
+    QAction *tool_change_size;  // 改变 image_label 控件大小
     QLabel *change_widget;  // 控制 image_label 大小的控件
     QLabel *set_thresholding_widget;  // 设置二值化阈值的滑动条控件
 
