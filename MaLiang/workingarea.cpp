@@ -100,36 +100,16 @@ void WorkingArea::RGB2Gray()
     int old_height = this->image->height();
     int old_width = this->image->width();
 
-    QImage gray_img(old_width, old_height, QImage::Format_Indexed8);  //  8 位图
-    gray_img.setColorCount(256);  // 256 种颜色
+    QImage gray_img = *this->image;
+    int gray = 0;
 
-    for(int i = 0; i < 256; i++)
-        gray_img.setColor(i, qRgb(i, i, i));  // 颜色表
-
-    switch (this->image->format())
+    for(int i = 0; i < old_width; i++)
     {
-        case QImage::Format_Indexed8:
-            for(int i = 0; i < old_height; i++)
-            {
-                const uchar *p_src = (uchar * )this->image->constScanLine(i);
-                uchar *p_dest = (uchar *)gray_img.scanLine(i);
-                memcpy(p_dest, p_src, old_width);
-            }
-            break;
-        case QImage::Format_RGB32:
-        case QImage::Format_ARGB32:
-        case QImage::Format_ARGB32_Premultiplied:
-            for(int i = 0; i < old_height; i++)
-            {
-                const QRgb *p_src = (QRgb *)this->image->constScanLine(i);
-                uchar *p_dest = (uchar *)gray_img.scanLine(i);
-
-                for(int j =0; j <old_width; j++)
-                    p_dest[j] = qGray(p_src[j]);  // (R*11+G*16+B*5)/32
-            }
-            break;
-        default:
-            break;
+        for(int j = 0; j < old_height; j++)
+        {
+            gray = qGray(this->image->pixel(i, j));  // Gray = (R * 11 + G * 16 + B * 5)/32
+            gray_img.setPixel(i, j, qRgb(gray, gray, gray));
+        }
     }
 
     this->image_label->setPixmap(QPixmap::fromImage(gray_img));
@@ -270,5 +250,73 @@ void WorkingArea::ToTxt()
 
 void WorkingArea::GetGrayHistogram()
 {
+    int gray_sum = 0;     // 图片总灰度
 
+    int image_width = this->image->width();
+    int image_height = this->image->height();
+
+    int pixel_gray = 0;  // 当前像素点的灰度值
+    int pixel_sum = image_width * image_height;    // 总像素数
+
+    int gray_array[256];  // 灰度数组
+    memset(gray_array,0,sizeof(gray_array));
+
+    // 统计灰度数组
+    for(int i = 0; i < image_width; i++)
+    {
+        for(int j = 0; j < image_height; j++)
+        {
+            pixel_gray = qGray(this->image->pixel(i, j));
+            gray_array[pixel_gray]++;
+            gray_sum += pixel_gray;
+        }
+    }
+
+    int gray_mean = gray_sum / pixel_sum;  // 平均灰度值
+
+    // 求灰度中位数，从两端开始搜，两端较大的减去较小的
+    int pointer_st = 0, pointer_ed = 255;
+//    while(pointer_ed > pointer_st)
+//    {
+//        if(gray_array[pointer_st] > gray_array[pointer_ed])
+//        {
+//            gray_array[pointer_st] -= gray_array[pointer_ed];
+//            gray_array[pointer_ed] = 0;
+//        }
+//        else
+//        {
+//            gray_array[pointer_ed] -= gray_array[pointer_st];
+//            gray_array[pointer_st] = 0;
+//        }
+
+//        if(gray_array[pointer_st] <= 0)
+//            pointer_st++;
+//        else
+//            gray_array[pointer_st]--;
+
+//        if(gray_array[pointer_ed] <= 0)
+//            pointer_ed--;
+//        else
+//            gray_array[pointer_ed]--;
+//    }
+
+    int gray_mid = (gray_array[pointer_st] + gray_array[pointer_ed]) / 2;  // 灰度中位数
+
+    float gray_standard_deviation = 0;  // 灰度标准差
+    int gray_max = 0;  // 最大灰度
+    for(int i = 0; i < 256; i++)  // 加权平均，而非直接 1/n
+    {
+        if(gray_array[pixel_gray] > gray_max)
+            gray_max = gray_array[pixel_gray];
+
+        gray_standard_deviation += float((gray_mean - i)*(gray_mean - i))/float(pixel_sum)*float(gray_array[i]);
+    }
+
+    gray_standard_deviation = sqrt(gray_standard_deviation);
+
+
+    QString gray_info = "";
+
+    GrayHistogram gray_histogram;
+    gray_histogram.Init(gray_array, gray_max, gray_info);
 }

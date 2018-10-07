@@ -9,8 +9,11 @@
 #include <QScrollArea>
 #include <QFileDialog>
 
+#include "grayhistogram.h"
+
 #include <thread>
 #include <fstream>
+#include <cmath>
 
 namespace Ui {
 class WorkingArea;
@@ -24,10 +27,10 @@ public:
     explicit WorkingArea(QWidget *parent = 0);
     ~WorkingArea();
 
-    bool InitImage();
-    int SaveImage(QString save_path);
-    void ChangeLabelSize(double scale);
-    void RGB2Gray();
+    bool InitImage();  // 初始化加载图片
+    int SaveImage(QString save_path);  // 从QLabel导出图片保存
+    void ChangeLabelSize(double scale);  // 改变显示图片用的QLabel控件的大小
+    void RGB2Gray();   // RGB转灰度图
     void Bit8Slice();  // 针对8位颜色(主要是灰度)，生成8幅位平面
     void Patterning();  // 图案法
     void SelectThresholding(int offset);  // 带有阈值选择的二值化

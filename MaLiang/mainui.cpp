@@ -48,6 +48,10 @@ MainUI::MainUI(QWidget *parent) :
     connect(this->pattern_floyd_steinberg, SIGNAL(triggered(bool)), this, SLOT(PatternFloydSteinberg()));
     connect(this->pattern_to_txt, SIGNAL(triggered(bool)), this, SLOT(PatternToTxt()));
 
+    this->menu_histogram = this->menu->addMenu(tr("直方图"));
+    this->histogram_gray = this->menu_histogram->addAction(tr("灰度直方图"));
+    connect(this->histogram_gray, SIGNAL(triggered(bool)), this, SLOT(HistogramGray()));
+
     this->tool = addToolBar(tr("工具"));
     this->change_widget = NULL;
     this->tool_change_size = this->tool->addAction(QIcon(":/res/change_size1.png"), tr("调整大小"));
@@ -360,4 +364,12 @@ void MainUI::PatternToTxt()
         return;
 
     this->working_area->ToTxt();
+}
+
+void MainUI::HistogramGray()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->GetGrayHistogram();
 }

@@ -26,15 +26,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainui.cpp \
-    workingarea.cpp
+    workingarea.cpp \
+    grayhistogram.cpp
 
 HEADERS += \
         mainui.h \
-    workingarea.h
+    workingarea.h \
+    grayhistogram.h
 
 FORMS += \
         mainui.ui \
-    workingarea.ui
+    workingarea.ui \
+    grayhistogram.ui
 
 RESOURCES += \
     res_mainui.qrc

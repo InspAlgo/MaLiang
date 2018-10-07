@@ -38,6 +38,8 @@ public slots:
     void PatternFloydSteinberg();
     void PatternToTxt();
 
+    void HistogramGray();
+
     void ToolChangeSize();
     void ChangeSize(int val);
 
@@ -65,6 +67,9 @@ private:
     QAction *pattern_select_thresholding;  // 模式-阈值选择二值化
     QAction *pattern_floyd_steinberg;  // 模式 - Floyd-Steinberg抖动
     QAction *pattern_to_txt;  // 模式-txt字符画
+
+    QMenu *menu_histogram;  // 直方图
+    QAction *histogram_gray;  // 直方图-灰度直方图
 
     QAction *tool_change_size;  // 改变 image_label 控件大小
     QLabel *change_widget;  // 控制 image_label 大小的控件
