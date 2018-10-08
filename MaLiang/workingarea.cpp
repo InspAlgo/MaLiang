@@ -276,31 +276,33 @@ void WorkingArea::GetGrayHistogram()
 
     // 求灰度中位数，从两端开始搜，两端较大的减去较小的
     int pointer_st = 0, pointer_ed = 255;
-//    while(pointer_ed > pointer_st)
-//    {
-//        if(gray_array[pointer_st] > gray_array[pointer_ed])
-//        {
-//            gray_array[pointer_st] -= gray_array[pointer_ed];
-//            gray_array[pointer_ed] = 0;
-//        }
-//        else
-//        {
-//            gray_array[pointer_ed] -= gray_array[pointer_st];
-//            gray_array[pointer_st] = 0;
-//        }
+    int gray_copy_array[256];
+    memcpy(gray_copy_array, gray_array,sizeof(gray_array));
+    while(pointer_ed > pointer_st)
+    {
+        if(gray_copy_array[pointer_st] > gray_copy_array[pointer_ed])
+        {
+            gray_copy_array[pointer_st] -= gray_copy_array[pointer_ed];
+            gray_copy_array[pointer_ed] = 0;
+        }
+        else
+        {
+            gray_copy_array[pointer_ed] -= gray_copy_array[pointer_st];
+            gray_copy_array[pointer_st] = 0;
+        }
 
-//        if(gray_array[pointer_st] <= 0)
-//            pointer_st++;
-//        else
-//            gray_array[pointer_st]--;
+        if(gray_copy_array[pointer_st] <= 0)
+            pointer_st++;
+        else
+            gray_copy_array[pointer_st]--;
 
-//        if(gray_array[pointer_ed] <= 0)
-//            pointer_ed--;
-//        else
-//            gray_array[pointer_ed]--;
-//    }
+        if(gray_copy_array[pointer_ed] <= 0)
+            pointer_ed--;
+        else
+            gray_copy_array[pointer_ed]--;
+    }
 
-    int gray_mid = (gray_array[pointer_st] + gray_array[pointer_ed]) / 2;  // 灰度中位数
+    int gray_mid = (pointer_st + pointer_ed) / 2;  // 灰度中位数
 
     float gray_standard_deviation = 0;  // 灰度标准差
     int gray_max = 0;  // 最大灰度
@@ -314,9 +316,8 @@ void WorkingArea::GetGrayHistogram()
 
     gray_standard_deviation = sqrt(gray_standard_deviation);
 
-
-    QString gray_info = "";
-
-    GrayHistogram gray_histogram;
-    gray_histogram.Init(gray_array, gray_max, gray_info);
+    GrayHistogram *gray_histogram = new GrayHistogram(NULL);
+    gray_histogram->Init(gray_array, gray_max);
+    gray_histogram->Set(pixel_sum, gray_mid, gray_mean, gray_standard_deviation);
+    gray_histogram->show();
 }
