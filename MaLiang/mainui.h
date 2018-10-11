@@ -39,6 +39,7 @@ public slots:
     void PatternToTxt();
 
     void HistogramGray();
+    void HistogramEqualization();
 
     void ToolChangeSize();
     void ChangeSize(int val);
@@ -70,6 +71,7 @@ private:
 
     QMenu *menu_histogram;  // 直方图
     QAction *histogram_gray;  // 直方图-灰度直方图
+    QAction *histogram_equalization;  // 直方图-均衡化
 
     QAction *tool_change_size;  // 改变 image_label 控件大小
     QLabel *change_widget;  // 控制 image_label 大小的控件

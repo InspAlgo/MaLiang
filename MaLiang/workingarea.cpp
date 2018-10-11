@@ -108,7 +108,7 @@ void WorkingArea::RGB2Gray()
         for(int j = 0; j < old_height; j++)
         {
             gray = qGray(this->image->pixel(i, j));  // Gray = (R * 11 + G * 16 + B * 5)/32
-            gray_img.setPixel(i, j, qRgb(gray, gray, gray));
+            gray_img.setPixel(i, j, qRgba(gray, gray, gray, qAlpha(this->image->pixel(i, j))));  // qAlpha() 为保留原透明度
         }
     }
 
@@ -226,6 +226,7 @@ void WorkingArea::FloydSteinberg()
 void WorkingArea::ToTxt()
 {
     const char ch_txt[] = "@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'.";
+//    const char ch_txt[] = "##############################........................................";
     QString save_path = this->path + "/" + this->image_name + "_2txt.txt";
     int old_width = this->image->width();
     int old_height = this->image->height();
@@ -234,6 +235,7 @@ void WorkingArea::ToTxt()
 
     for(int i = 0; i < old_height; i++)
     {
+//        content += "\"";
         for(int j = 0; j < old_width; j++)
         {
             int gray = qGray(this->image->pixel(j,i));
@@ -252,8 +254,11 @@ void WorkingArea::GetGrayHistogram()
 {
     int gray_sum = 0;     // 图片总灰度
 
-    int image_width = this->image->width();
-    int image_height = this->image->height();
+    QImage label_image = this->image_label->pixmap()->toImage();
+
+    int image_width = label_image.width();
+    int image_height = label_image.height();
+
 
     int pixel_gray = 0;  // 当前像素点的灰度值
     int pixel_sum = image_width * image_height;    // 总像素数
@@ -266,7 +271,7 @@ void WorkingArea::GetGrayHistogram()
     {
         for(int j = 0; j < image_height; j++)
         {
-            pixel_gray = qGray(this->image->pixel(i, j));
+            pixel_gray = qGray(label_image.pixel(i, j));
             gray_array[pixel_gray]++;
             gray_sum += pixel_gray;
         }
@@ -308,7 +313,7 @@ void WorkingArea::GetGrayHistogram()
     int gray_max = 0;  // 最大灰度
     for(int i = 0; i < 256; i++)  // 加权平均，而非直接 1/n
     {
-        if(gray_array[pixel_gray] > gray_max)
+        if(gray_array[pixel_gray] > gray_max)  // 考虑减少复杂度，所以把求最多灰度值放这里了
             gray_max = gray_array[pixel_gray];
 
         gray_standard_deviation += float((gray_mean - i)*(gray_mean - i))/float(pixel_sum)*float(gray_array[i]);
@@ -320,4 +325,73 @@ void WorkingArea::GetGrayHistogram()
     gray_histogram->Init(gray_array, gray_max);
     gray_histogram->Set(pixel_sum, gray_mid, gray_mean, gray_standard_deviation);
     gray_histogram->show();
+}
+
+
+void WorkingArea::HistogramEqualization()
+{
+    int image_width = this->image->width();
+    int image_height = this->image->height();
+    int pixel_sum = image_width * image_height;  // 总像素数
+    int r_hist[256], g_hist[256], b_hist[256];  // rgb各分量灰度级数组
+    int r_equ[256], g_equ[256], b_equ[256];  // 均衡化后 rgb 各分量灰度级数组
+    memset(r_hist, 0, sizeof(r_hist));
+    memset(g_hist, 0, sizeof(g_hist));
+    memset(b_hist, 0, sizeof(b_hist));
+    float r_old[256], g_old[256], b_old[256];  // 均衡化前各灰度级概率
+    float r_new[256], g_new[256], b_new[256];  // 均衡化后各灰度级概率
+
+    QRgb pixel_rgb;
+
+    // 统计各灰度级数量
+    for(int i = 0; i < image_width; i++)
+    {
+        for(int j = 0; j < image_height; j++)
+        {
+            pixel_rgb = this->image->pixel(i, j);
+            r_hist[qRed(pixel_rgb)]++;
+            g_hist[qGreen(pixel_rgb)]++;
+            b_hist[qBlue(pixel_rgb)]++;
+        }
+    }
+
+    // 均衡化前各灰度级概率
+    for(int i = 0; i < 256; i++)
+    {
+        r_old[i] = (float)r_hist[i]/(float)pixel_sum;
+        g_old[i] = (float)g_hist[i]/(float)pixel_sum;
+        b_old[i] = (float)b_hist[i]/(float)pixel_sum;
+    }
+
+    // 均衡化后各灰度级概率
+    r_new[0] = r_old[0];
+    g_new[0] = g_old[0];
+    b_new[0] = b_old[0];
+    for(int i = 1; i < 256; i++)
+    {
+        r_new[i] = r_new[i - 1] + r_old[i];
+        g_new[i] = g_new[i - 1] + g_old[i];
+        b_new[i] = b_new[i - 1] + b_old[i];
+    }
+
+    // 均衡化后对应的像素值
+    for(int i = 0; i < 256; i++)
+    {
+        r_equ[i] = int(r_new[i]*255);
+        g_equ[i] = int(g_new[i]*255);
+        b_equ[i] = int(b_new[i]*255);
+    }
+
+    QImage ret = *this->image;
+    for(int i = 0; i < image_width; i++)
+    {
+        for(int j = 0; j < image_height; j++)
+        {
+            pixel_rgb = this->image->pixel(i, j);
+            ret.setPixel(i, j,
+                qRgba(r_equ[qRed(pixel_rgb)], g_equ[qGreen(pixel_rgb)], b_equ[qBlue(pixel_rgb)], qAlpha(pixel_rgb)));
+        }
+    }
+
+    this->image_label->setPixmap(QPixmap::fromImage(ret));
 }

@@ -50,7 +50,9 @@ MainUI::MainUI(QWidget *parent) :
 
     this->menu_histogram = this->menu->addMenu(tr("直方图"));
     this->histogram_gray = this->menu_histogram->addAction(tr("灰度直方图"));
+    this->histogram_equalization = this->menu_histogram->addAction(tr("均衡化"));
     connect(this->histogram_gray, SIGNAL(triggered(bool)), this, SLOT(HistogramGray()));
+    connect(this->histogram_equalization, SIGNAL(triggered(bool)), this, SLOT(HistogramEqualization()));
 
     this->tool = addToolBar(tr("工具"));
     this->change_widget = NULL;
@@ -372,4 +374,12 @@ void MainUI::HistogramGray()
         return;
 
     this->working_area->GetGrayHistogram();
+}
+
+void MainUI::HistogramEqualization()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->HistogramEqualization();
 }

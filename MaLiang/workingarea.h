@@ -37,6 +37,7 @@ public:
     void FloydSteinberg();  // Floyd-Steinberg 抖动(dithering)算法
     void ToTxt();  // txt字符画
     void GetGrayHistogram();  // 计算灰度直方图相关
+    void HistogramEqualization();  // 直方图均衡化
 
     int is_saved;  // 状态类型
     unsigned char *buffer;
