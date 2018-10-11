@@ -27,17 +27,20 @@ SOURCES += \
         main.cpp \
         mainui.cpp \
     workingarea.cpp \
-    grayhistogram.cpp
+    grayhistogram.cpp \
+    parametersetting.cpp
 
 HEADERS += \
         mainui.h \
     workingarea.h \
-    grayhistogram.h
+    grayhistogram.h \
+    parametersetting.h
 
 FORMS += \
         mainui.ui \
     workingarea.ui \
-    grayhistogram.ui
+    grayhistogram.ui \
+    parametersetting.ui
 
 RESOURCES += \
     res_mainui.qrc

@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QScrollArea>
 #include <QFileDialog>
+#include <QtMath>
 
 #include "grayhistogram.h"
 
@@ -38,6 +39,10 @@ public:
     void ToTxt();  // txt字符画
     void GetGrayHistogram();  // 计算灰度直方图相关
     void HistogramEqualization();  // 直方图均衡化
+    void TransformLinear(float linear_a, float linear_b);  // 线性变换
+    void TransformLaplace(float laplace_a, float laplace_b);  // 拉普拉斯变换
+    void TransformLog(float log_a, float log_b, float log_c);  // 对数变换
+    void TransformGamma(float gamma_a, float gamma_b, float gamma_c);  // 伽马变换
 
     int is_saved;  // 状态类型
     unsigned char *buffer;

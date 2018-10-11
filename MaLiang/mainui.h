@@ -11,6 +11,7 @@
 #include <QSlider>
 
 #include "workingarea.h"
+#include "parametersetting.h"
 
 namespace Ui {
 class MainUI;
@@ -41,10 +42,21 @@ public slots:
     void HistogramGray();
     void HistogramEqualization();
 
+    void TransformLinear();
+    void TransformNegativeFilm();
+    void TransformLaplace();
+    void TransformLog();
+    void TransformGamma();
+
     void ToolChangeSize();
     void ChangeSize(int val);
 
     void SetThresholding(int val);
+
+    void ReceiveLinearParameter(float linear_a, float linear_b);
+    void ReceiveLaplaceParameter(float laplace_a, float laplace_b);
+    void ReceiveLogParameter(float log_a, float log_b, float log_c);
+    void ReceiveGammaParameter(float gamma_a, float gamma_b, float gamma_c);
 
 private:
 
@@ -73,11 +85,19 @@ private:
     QAction *histogram_gray;  // 直方图-灰度直方图
     QAction *histogram_equalization;  // 直方图-均衡化
 
+    QMenu *menu_transform;  // 变换
+    QAction *transform_linear;  // 变换-线性变换
+    QAction *transform_negative_film;  // 变换-负片
+    QAction *transform_laplace;  // 变换-Laplace变换
+    QAction *transform_log;  // 变换-log变换
+    QAction *transform_gamma;  // 变换-Gamma变换
+
     QAction *tool_change_size;  // 改变 image_label 控件大小
     QLabel *change_widget;  // 控制 image_label 大小的控件
     QLabel *set_thresholding_widget;  // 设置二值化阈值的滑动条控件
 
     WorkingArea *working_area;  // 工作区，用来显示图片，也是编辑操作窗口
+    ParameterSetting *parameter_setting;
 };
 
 #endif // MAINUI_H

@@ -395,3 +395,125 @@ void WorkingArea::HistogramEqualization()
 
     this->image_label->setPixmap(QPixmap::fromImage(ret));
 }
+
+void WorkingArea::TransformLinear(float linear_a, float linear_b)
+{
+    int image_width = this->image->width();
+    int image_height = this->image->height();
+
+    QImage ret = *this->image;
+    QRgb rgb;
+
+    int r_new, g_new, b_new;
+
+    for(int i = 0; i < image_width; i++)
+    {
+        for(int j = 0; j < image_height; j++)
+        {
+            rgb = this->image->pixel(i, j);
+            r_new = int(qRed(rgb) * linear_a + linear_b);
+            g_new = int(qGreen(rgb) * linear_a + linear_b);
+            b_new = int(qBlue(rgb) * linear_a + linear_b);
+
+            if(r_new > 255)
+                r_new = 255;
+            if(r_new < 0)
+                r_new = 0;
+            if(g_new > 255)
+                g_new = 255;
+            if(g_new < 0)
+                g_new = 0;
+            if(b_new > 255)
+                b_new = 255;
+            if(b_new < 0)
+                b_new = 0;
+
+            ret.setPixel(i, j, qRgba(r_new, g_new, b_new, qAlpha(rgb)));
+        }
+    }
+
+    this->image_label->setPixmap(QPixmap::fromImage(ret));
+}
+
+void WorkingArea::TransformLaplace(float laplace_a, float laplace_b)
+{
+
+}
+
+void WorkingArea::TransformLog(float log_a, float log_b, float log_c)
+{
+    int image_width = this->image->width();
+    int image_height = this->image->height();
+
+    QImage ret = *this->image;
+    QRgb rgb;
+
+    int r_new, g_new, b_new;
+
+    for(int i = 0; i < image_width; i++)
+    {
+        for(int j = 0; j < image_height; j++)
+        {
+            rgb = this->image->pixel(i, j);
+            r_new = int(log_c * qLn(qRed(rgb) + log_b) / qLn(log_a));
+            g_new = int(log_c * qLn(qGreen(rgb) + log_b) / qLn(log_a));
+            b_new = int(log_c * qLn(qBlue(rgb) + log_b) / qLn(log_a));
+
+            if(r_new > 255)
+                r_new = 255;
+            if(r_new < 0)
+                r_new = 0;
+            if(g_new > 255)
+                g_new = 255;
+            if(g_new < 0)
+                g_new = 0;
+            if(b_new > 255)
+                b_new = 255;
+            if(b_new < 0)
+                b_new = 0;
+
+            ret.setPixel(i, j, qRgba(r_new, g_new, b_new, qAlpha(rgb)));
+        }
+    }
+
+    this->image_label->setPixmap(QPixmap::fromImage(ret));
+}
+
+void WorkingArea::TransformGamma(float gamma_a, float gamma_b, float gamma_c)
+{
+    int image_width = this->image->width();
+    int image_height = this->image->height();
+
+    QImage ret = *this->image;
+    QRgb rgb;
+
+    int r_new, g_new, b_new;
+
+    for(int i = 0; i < image_width; i++)
+    {
+        for(int j = 0; j < image_height; j++)
+        {
+            rgb = this->image->pixel(i, j);
+            r_new = int(gamma_c * qPow(qRed(rgb) + gamma_b, gamma_a));
+            g_new = int(gamma_c * qPow(qGreen(rgb) + gamma_b, gamma_a));
+            b_new = int(gamma_c * qPow(qBlue(rgb) + gamma_b, gamma_a));
+
+            if(r_new > 255)
+                r_new = 255;
+            if(r_new < 0)
+                r_new = 0;
+            if(g_new > 255)
+                g_new = 255;
+            if(g_new < 0)
+                g_new = 0;
+            if(b_new > 255)
+                b_new = 255;
+            if(b_new < 0)
+                b_new = 0;
+
+            ret.setPixel(i, j, qRgba(r_new, g_new, b_new, qAlpha(rgb)));
+        }
+    }
+
+    this->image_label->setPixmap(QPixmap::fromImage(ret));
+}

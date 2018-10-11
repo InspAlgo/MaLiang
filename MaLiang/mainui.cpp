@@ -54,10 +54,28 @@ MainUI::MainUI(QWidget *parent) :
     connect(this->histogram_gray, SIGNAL(triggered(bool)), this, SLOT(HistogramGray()));
     connect(this->histogram_equalization, SIGNAL(triggered(bool)), this, SLOT(HistogramEqualization()));
 
+    this->menu_transform = this->menu->addMenu(tr("变换"));
+    this->transform_linear = this->menu_transform->addAction(tr("线性变换"));
+    this->transform_negative_film = this->menu_transform->addAction(tr("负片"));
+    this->transform_laplace = this->menu_transform->addAction(tr("拉普拉斯变换"));
+    this->transform_log = this->menu_transform->addAction(tr("对数变换"));
+    this->transform_gamma = this->menu_transform->addAction(tr("伽马变换"));
+    connect(this->transform_linear, SIGNAL(triggered(bool)), this, SLOT(TransformLinear()));
+    connect(this->transform_negative_film, SIGNAL(triggered(bool)), this, SLOT(TransformNegativeFilm()));
+    connect(this->transform_laplace, SIGNAL(triggered(bool)), this, SLOT(TransformLaplace()));
+    connect(this->transform_log, SIGNAL(triggered(bool)), this, SLOT(TransformLog()));
+    connect(this->transform_gamma, SIGNAL(triggered(bool)), this, SLOT(TransformGamma()));
+
     this->tool = addToolBar(tr("工具"));
     this->change_widget = NULL;
     this->tool_change_size = this->tool->addAction(QIcon(":/res/change_size1.png"), tr("调整大小"));
     connect(this->tool_change_size, SIGNAL(triggered()), this, SLOT(ToolChangeSize()));
+
+    this->parameter_setting = new ParameterSetting(NULL);
+    connect(this->parameter_setting, SIGNAL(SendLinearParameter(float,float)), this, SLOT(ReceiveLinearParameter(float,float)));
+    connect(this->parameter_setting, SIGNAL(SendLaplaceParameter(float,float)), this, SLOT(ReceiveLaplaceParameter(float,float)));
+    connect(this->parameter_setting, SIGNAL(SendLogParameter(float,float,float)), this, SLOT(ReceiveLogParameter(float,float,float)));
+    connect(this->parameter_setting, SIGNAL(SendGammaParameter(float,float,float)), this, SLOT(ReceiveGammaParameter(float,float,float)));
 }
 
 MainUI::~MainUI()
@@ -382,4 +400,68 @@ void MainUI::HistogramEqualization()
         return;
 
     this->working_area->HistogramEqualization();
+}
+
+void MainUI::ReceiveLinearParameter(float linear_a, float linear_b)
+{
+    this->working_area->TransformLinear(linear_a, linear_b);
+}
+
+void MainUI::TransformLinear()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->parameter_setting->LinearParameterInit();
+    this->parameter_setting->show();
+}
+
+void MainUI::TransformNegativeFilm()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->TransformLinear(-1, 255);
+}
+
+void MainUI::ReceiveLaplaceParameter(float laplace_a, float laplace_b)
+{
+
+}
+
+void MainUI::TransformLaplace()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->parameter_setting->LaplaceParameterInit();
+    this->parameter_setting->show();
+}
+
+void MainUI::ReceiveLogParameter(float log_a, float log_b, float log_c)
+{
+    this->working_area->TransformLog(log_a, log_b, log_c);
+}
+
+void MainUI::TransformLog()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->parameter_setting->LogParameterInit();
+    this->parameter_setting->show();
+}
+
+void MainUI::ReceiveGammaParameter(float gamma_a, float gamma_b, float gamma_c)
+{
+    this->working_area->TransformGamma(gamma_a, gamma_b, gamma_c);
+}
+
+void MainUI::TransformGamma()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->parameter_setting->GammaParameterInit();
+    this->parameter_setting->show();
 }
