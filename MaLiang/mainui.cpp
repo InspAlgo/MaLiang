@@ -434,8 +434,7 @@ void MainUI::TransformLaplace()
     if(this->working_area == NULL)
         return;
 
-    this->parameter_setting->LaplaceParameterInit();
-    this->parameter_setting->show();
+    this->working_area->TransformLaplace(0,0);
 }
 
 void MainUI::ReceiveLogParameter(float log_a, float log_b, float log_c)

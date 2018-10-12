@@ -437,7 +437,50 @@ void WorkingArea::TransformLinear(float linear_a, float linear_b)
 
 void WorkingArea::TransformLaplace(float laplace_a, float laplace_b)
 {
+    int image_width = this->image->width();
+    int image_height = this->image->height();
 
+    QImage ret = *this->image;
+    QRgb rgb,rgb1,rgb2,rgb3,rgb4;
+
+    int r_new, g_new, b_new;
+
+    for(int i = 0; i < image_width; i++)
+    {
+        for(int j = 0; j < image_height; j++)
+        {
+            if(i + 1 >= image_width || j + 1 >= image_height
+                || i - 1 < 0 || j - 1 < 0)
+                continue;
+
+            rgb = this->image->pixel(i, j);
+            rgb1 = this->image->pixel(i + 1, j);
+            rgb2 = this->image->pixel(i - 1, j);
+            rgb3 = this->image->pixel(i, j + 1);
+            rgb4 = this->image->pixel(i, j - 1);
+
+            r_new = qRed(rgb) + 4*qRed(rgb)-qRed(rgb1)-qRed(rgb2)-qRed(rgb3)-qRed(rgb4);
+            g_new = qGreen(rgb) + 4*qGreen(rgb)-qGreen(rgb1)-qGreen(rgb2)-qGreen(rgb3)-qGreen(rgb4);
+            b_new = qBlue(rgb) +  4*qBlue(rgb)-qBlue(rgb1)-qBlue(rgb2)-qBlue(rgb3)-qBlue(rgb4);
+
+            if(r_new > 255)
+                r_new = 255;
+            if(r_new < 0)
+                r_new = 0;
+            if(g_new > 255)
+                g_new = 255;
+            if(g_new < 0)
+                g_new = 0;
+            if(b_new > 255)
+                b_new = 255;
+            if(b_new < 0)
+                b_new = 0;
+
+            ret.setPixel(i, j, qRgba(r_new, g_new, b_new, qAlpha(rgb)));
+        }
+    }
+
+    this->image_label->setPixmap(QPixmap::fromImage(ret));
 }
 
 void WorkingArea::TransformLog(float log_a, float log_b, float log_c)
