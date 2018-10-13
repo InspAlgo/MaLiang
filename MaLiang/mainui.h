@@ -98,6 +98,8 @@ private:
 
     WorkingArea *working_area;  // 工作区，用来显示图片，也是编辑操作窗口
     ParameterSetting *parameter_setting;
+
+    int thresholding_flag;  // 模式-阈值选择二值化 的标志符；0-未初始化，1-启动，2-关闭
 };
 
 #endif // MAINUI_H

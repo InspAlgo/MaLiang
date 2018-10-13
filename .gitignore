@@ -1,6 +1,8 @@
 # MaLiang Project
 build-MaLiang/*
+build-MaLiang-Release/*
 Release/*
+Debug/*
 MaLiang/res/*
 
 # Prerequisites

@@ -76,6 +76,8 @@ MainUI::MainUI(QWidget *parent) :
     connect(this->parameter_setting, SIGNAL(SendLaplaceParameter(float,float)), this, SLOT(ReceiveLaplaceParameter(float,float)));
     connect(this->parameter_setting, SIGNAL(SendLogParameter(float,float,float)), this, SLOT(ReceiveLogParameter(float,float,float)));
     connect(this->parameter_setting, SIGNAL(SendGammaParameter(float,float,float)), this, SLOT(ReceiveGammaParameter(float,float,float)));
+
+    this->thresholding_flag = 0;
 }
 
 MainUI::~MainUI()
@@ -315,54 +317,59 @@ void MainUI::PatternSelectThresholding()
     if(this->working_area == NULL)
         return;
 
-    if(this->set_thresholding_widget != NULL)
+    if(this->thresholding_flag == 1)  // 二值化滑动条已开启
     {
         delete this->set_thresholding_widget;
         this->set_thresholding_widget = NULL;
+        this->thresholding_flag = 0;
         return;
     }
 
-    QString slider_qss = "QSlider::groove:horizontal {"
-                            "height: 6px;"
-                            "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(124, 124, 124), stop: 1.0 rgb(72, 71, 71));"
-                          "}"
-                           "QSlider::handle:horizontal {"
-                                  "width: 10px;"
-                                  "background: rgb(0, 160, 230);"
-                                  "margin: -6px 0px -6px 0px;"
-                                  "border-radius: 15px;"
-                            "}";
-    int nMin = 0;  // 最小值
-    int nMax = 255;  // 最大值
-    int nSingleStep = 1;  // 步长
+    if(this->thresholding_flag == 0)  // 二值化滑动条未开启
+    {
+        QString slider_qss = "QSlider::groove:horizontal {"
+                                "height: 6px;"
+                                "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(124, 124, 124), stop: 1.0 rgb(72, 71, 71));"
+                              "}"
+                               "QSlider::handle:horizontal {"
+                                      "width: 10px;"
+                                      "background: rgb(0, 160, 230);"
+                                      "margin: -6px 0px -6px 0px;"
+                                      "border-radius: 15px;"
+                                "}";
+        int nMin = 0;  // 最小值
+        int nMax = 255;  // 最大值
+        int nSingleStep = 1;  // 步长
 
-    this->set_thresholding_widget = new QLabel(this);
-    this->set_thresholding_widget->setFixedSize(300, 30);  // 禁止改变窗口大小
-    QSpinBox *pSpinBox = new QSpinBox(this->set_thresholding_widget);
-    pSpinBox->setMinimum(nMin);  // 最小值
-    pSpinBox->setMaximum(nMax);  // 最大值
-    pSpinBox->setSingleStep(nSingleStep);  // 步长
+        this->set_thresholding_widget = new QLabel(this);
+        this->set_thresholding_widget->setFixedSize(300, 30);  // 禁止改变窗口大小
+        QSpinBox *pSpinBox = new QSpinBox(this->set_thresholding_widget);
+        pSpinBox->setMinimum(nMin);  // 最小值
+        pSpinBox->setMaximum(nMax);  // 最大值
+        pSpinBox->setSingleStep(nSingleStep);  // 步长
 
-    QSlider *pSlider = new QSlider(this->set_thresholding_widget);
-    pSlider->setOrientation(Qt::Horizontal);  // 水平方向
-    pSlider->setMinimum(nMin);  // 最小值
-    pSlider->setMaximum(nMax);  // 最大值
-    pSlider->setSingleStep(nSingleStep);  // 步长
+        QSlider *pSlider = new QSlider(this->set_thresholding_widget);
+        pSlider->setOrientation(Qt::Horizontal);  // 水平方向
+        pSlider->setMinimum(nMin);  // 最小值
+        pSlider->setMaximum(nMax);  // 最大值
+        pSlider->setSingleStep(nSingleStep);  // 步长
 
-    connect(pSpinBox, SIGNAL(valueChanged(int)), pSlider, SLOT(setValue(int)));
-    connect(pSlider, SIGNAL(valueChanged(int)), pSpinBox, SLOT(setValue(int)));
-    connect(pSpinBox, SIGNAL(valueChanged(int)), this, SLOT(SetThresholding(int)));
+        connect(pSpinBox, SIGNAL(valueChanged(int)), pSlider, SLOT(setValue(int)));
+        connect(pSlider, SIGNAL(valueChanged(int)), pSpinBox, SLOT(setValue(int)));
+        connect(pSpinBox, SIGNAL(valueChanged(int)), this, SLOT(SetThresholding(int)));
 
-    pSpinBox->setValue(128);
-    pSlider->setStyleSheet(slider_qss);  // 加载样式
+        pSpinBox->setValue(128);
+        pSlider->setStyleSheet(slider_qss);  // 加载样式
 
-    pSpinBox->resize(80,30);
-    pSpinBox->move(0, 0);
-    pSlider->resize(200, 30);
-    pSlider->move(90, 0);
+        pSpinBox->resize(80,30);
+        pSpinBox->move(0, 0);
+        pSlider->resize(200, 30);
+        pSlider->move(90, 0);
 
-    this->set_thresholding_widget->move(320, this->menu->height() + this->tool->height());
-    this->set_thresholding_widget->show();
+        this->set_thresholding_widget->move(320, this->menu->height() + this->tool->height());
+        this->set_thresholding_widget->show();
+        this->thresholding_flag = 1;
+    }
 }
 
 void MainUI::SetThresholding(int val)

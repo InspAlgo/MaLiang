@@ -245,7 +245,7 @@ void WorkingArea::ToTxt()
         content += "\n";
     }
 
-    std::fstream file((char *)save_path.toStdString().data(), std::ios::out);
+    std::fstream file((char *)save_path.toLocal8Bit().data(), std::ios::out);
     file << content;
     file.close();
 }

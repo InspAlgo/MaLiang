@@ -6,6 +6,7 @@ ParameterSetting::ParameterSetting(QWidget *parent) :
     ui(new Ui::ParameterSetting)
 {
     ui->setupUi(this);
+    this->setWindowTitle(tr("Parameter Setting"));
     this->type = 0;
     ui->label_formula->setText(tr(""));
     ui->lineEdit_parameter_a->setText(tr(""));
