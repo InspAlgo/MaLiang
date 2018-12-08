@@ -39,6 +39,18 @@ void ParameterSetting::on_pushButton_parameter_OK_clicked()
         case 4:
             emit SendGammaParameter(parameter_a, parameter_b, parameter_c);
             break;
+        case 5:
+            emit SendSpatialTransNNParameter(parameter_a, parameter_b);
+            break;
+        case 6:
+            emit SendSpatialTransBIParameter(parameter_a, parameter_b);
+            break;
+        case 7:
+            emit SendSpatialTransRotatingParameter(parameter_a);
+            break;
+        case 8:
+            emit SendSpatialTransTranslationParameter(parameter_a, parameter_b);
+            break;
         default:
             break;
     }
@@ -131,3 +143,62 @@ void ParameterSetting::GammaParameterInit()
     ui->lineEdit_parameter_c->setVisible(true);
 }
 
+void ParameterSetting::SpatialTransNNParameterInit()
+{
+    this->type = 5;
+    this->InitAllParameterSetting();
+
+    ui->label_parameter_a->setText(tr("横宽缩放比例："));
+    ui->label_parameter_b->setText(tr("竖高缩放比例："));
+    ui->lineEdit_parameter_a->setText(tr("1"));
+    ui->lineEdit_parameter_b->setText(tr("1"));
+
+    ui->label_parameter_a->setVisible(true);
+    ui->label_parameter_b->setVisible(true);
+    ui->lineEdit_parameter_a->setVisible(true);
+    ui->lineEdit_parameter_b->setVisible(true);
+}
+
+void ParameterSetting::SpatialTransBIParameterInit()
+{
+    this->type = 6;
+    this->InitAllParameterSetting();
+
+    ui->label_parameter_a->setText(tr("横宽缩放比例："));
+    ui->label_parameter_b->setText(tr("竖高缩放比例："));
+    ui->lineEdit_parameter_a->setText(tr("1"));
+    ui->lineEdit_parameter_b->setText(tr("1"));
+
+    ui->label_parameter_a->setVisible(true);
+    ui->label_parameter_b->setVisible(true);
+    ui->lineEdit_parameter_a->setVisible(true);
+    ui->lineEdit_parameter_b->setVisible(true);
+}
+
+void ParameterSetting::SpatailTransRotaingParameterInit()
+{
+    this->type = 7;
+    this->InitAllParameterSetting();
+
+    ui->label_parameter_a->setText(tr("旋转度数："));
+    ui->lineEdit_parameter_a->setText(tr("0"));
+
+    ui->label_parameter_a->setVisible(true);
+    ui->lineEdit_parameter_a->setVisible(true);
+}
+
+void ParameterSetting::SpatailTransTranslationParameterInit()
+{
+    this->type = 8;
+    this->InitAllParameterSetting();
+
+    ui->label_parameter_a->setText(tr("水平平移："));
+    ui->label_parameter_b->setText(tr("垂直平移："));
+    ui->lineEdit_parameter_a->setText(tr("0"));
+    ui->lineEdit_parameter_b->setText(tr("0"));
+
+    ui->label_parameter_a->setVisible(true);
+    ui->label_parameter_b->setVisible(true);
+    ui->lineEdit_parameter_a->setVisible(true);
+    ui->lineEdit_parameter_b->setVisible(true);
+}

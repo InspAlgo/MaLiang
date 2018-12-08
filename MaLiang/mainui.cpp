@@ -42,11 +42,13 @@ MainUI::MainUI(QWidget *parent) :
     this->pattern_select_thresholding = this->menu_pattern->addAction(tr("二值化"));
     this->pattern_floyd_steinberg = this->menu_pattern->addAction(tr("Floyd-Steinberg抖动"));
     this->pattern_to_txt = this->menu_pattern->addAction(tr("txt字符画"));
+    this->pattern_24bit_to_256 = this->menu_pattern->addAction(tr("24位真彩图转256色"));
     connect(this->pattern_gray, SIGNAL(triggered(bool)), this, SLOT(PatternGray()));
     connect(this->pattern_8bit_slice, SIGNAL(triggered(bool)), this, SLOT(Pattern8BitSlice()));
     connect(this->pattern_select_thresholding, SIGNAL(triggered(bool)), this, SLOT(PatternSelectThresholding()));
     connect(this->pattern_floyd_steinberg, SIGNAL(triggered(bool)), this, SLOT(PatternFloydSteinberg()));
     connect(this->pattern_to_txt, SIGNAL(triggered(bool)), this, SLOT(PatternToTxt()));
+    connect(this->pattern_24bit_to_256, SIGNAL(triggered(bool)), this, SLOT(Pattern24BitTo256()));
 
     this->menu_histogram = this->menu->addMenu(tr("直方图"));
     this->histogram_gray = this->menu_histogram->addAction(tr("灰度直方图"));
@@ -66,16 +68,76 @@ MainUI::MainUI(QWidget *parent) :
     connect(this->transform_log, SIGNAL(triggered(bool)), this, SLOT(TransformLog()));
     connect(this->transform_gamma, SIGNAL(triggered(bool)), this, SLOT(TransformGamma()));
 
+    this->menu_spatial_trans = this->menu->addMenu(tr("空间变换"));
+    this->spatial_trans_nearest_neighbor = this->menu_spatial_trans->addAction(tr("最近邻插值缩放"));
+    this->spatial_trans_bilinear_interpolation = this->menu_spatial_trans->addAction(tr("双线性插值缩放"));
+    this->spatial_trans_rotating = this->menu_spatial_trans->addAction(tr("旋转"));
+    this->spatial_trans_translaton = this->menu_spatial_trans->addAction(tr("平移"));
+    connect(this->spatial_trans_nearest_neighbor, SIGNAL(triggered(bool)), this, SLOT(SpatialTransNN()));
+    connect(this->spatial_trans_bilinear_interpolation, SIGNAL(triggered(bool)), this, SLOT(SpatialTransBI()));
+    connect(this->spatial_trans_rotating, SIGNAL(triggered(bool)), this, SLOT(SpatialTransRotating()));
+    connect(this->spatial_trans_translaton, SIGNAL(triggered(bool)), this, SLOT(SpatialTransTranslation()));
+
+    this->menu_enhancements = this->menu->addMenu(tr("图像增强"));
+    this->enhancements_mean = this->menu_enhancements->addAction(tr("均值平滑"));
+    this->enhancements_median = this->menu_enhancements->addAction(tr("中值平滑"));
+    this->enhancements_k_neighborhood = this->menu_enhancements->addAction(tr("K邻域平滑"));
+    this->enhancements_minimum_mean_variance = this->menu_enhancements->addAction(tr("最小均方差平滑"));
+    this->enhancements_roberts = this->menu_enhancements->addAction(tr("Roberts锐化"));
+    this->enhancements_sobel = this->menu_enhancements->addAction(tr("Sobel锐化"));
+    this->enhancements_laplace = this->menu_enhancements->addAction(tr("Laplace锐化"));
+    this->enhancements_convolution = this->menu_enhancements->addAction(tr("自定义卷积模板"));
+    connect(this->enhancements_mean, SIGNAL(triggered(bool)), this, SLOT(EnhancementsMean()));
+    connect(this->enhancements_median, SIGNAL(triggered(bool)), this, SLOT(EnhancementsMedian()));
+    connect(this->enhancements_k_neighborhood, SIGNAL(triggered(bool)), this, SLOT(EnhancementsKNeighborhood()));
+    connect(this->enhancements_minimum_mean_variance, SIGNAL(triggered(bool)), this, SLOT(EnhancementsMinimumMeanVariance()));
+    connect(this->enhancements_roberts, SIGNAL(triggered(bool)), this, SLOT(EnhancementsRoberts()));
+    connect(this->enhancements_sobel, SIGNAL(triggered(bool)), this, SLOT(EnhancementsSobel()));
+    connect(this->enhancements_laplace, SIGNAL(triggered(bool)), this, SLOT(EnhancementsLaplace()));
+    connect(this->enhancements_convolution, SIGNAL(triggered(bool)), this, SLOT(EnhancementsConvolution()));
+
+    this->menu_edge = this->menu->addMenu(tr("边缘检测"));
+    this->edge_laplace = this->menu_edge->addAction(tr("Laplace算子"));
+    this->edge_kirsch = this->menu_edge->addAction(tr("Kirsch方向算子"));
+//    this->edge_canny = this->menu_edge->addAction(tr("Canny算子"));
+    this->edge_tracking = this->menu_edge->addAction(tr("边缘跟踪"));
+    this->edge_huogh = this->menu_edge->addAction(tr("霍夫变换检测直线"));
+    connect(this->edge_laplace, SIGNAL(triggered(bool)), this, SLOT(EdgeLaplace()));
+    connect(this->edge_kirsch, SIGNAL(triggered(bool)), this, SLOT(EdgeKirsch()));
+//    connect(this->edge_canny, SIGNAL(triggered(bool)), this, SLOT(EdgeCanny()));
+    connect(this->edge_tracking, SIGNAL(triggered(bool)), this, SLOT(EdgeTracking()));
+    connect(this->edge_huogh, SIGNAL(triggered(bool)), this, SLOT(EdgeHuogh()));
+
+    this->menu_code = this->menu->addMenu((tr("编码解码")));
+    this->code_huffman_c = this->menu_code->addAction(tr("Huffman编码"));
+    this->code_huffman_d = this->menu_code->addAction(tr("Huffman解码"));
+    this->code_runs_c = this->menu_code->addAction(tr("游程长度编码"));
+    this->code_runs_d = this->menu_code->addAction(tr("游程长度解码"));
+    connect(this->code_huffman_c, SIGNAL(triggered(bool)), this, SLOT(CodeHuffmanC()));
+    connect(this->code_huffman_d, SIGNAL(triggered(bool)), this, SLOT(CodeHuffmanD()));
+    connect(this->code_runs_c, SIGNAL(triggered(bool)), this, SLOT(CodeRunsC()));
+    connect(this->code_runs_d, SIGNAL(triggered(bool)), this, SLOT(CodeRunsD()));
+
     this->tool = addToolBar(tr("工具"));
     this->change_widget = NULL;
     this->tool_change_size = this->tool->addAction(QIcon(":/res/change_size1.png"), tr("调整大小"));
     connect(this->tool_change_size, SIGNAL(triggered()), this, SLOT(ToolChangeSize()));
 
+    // 参数设置弹窗
     this->parameter_setting = new ParameterSetting(NULL);
     connect(this->parameter_setting, SIGNAL(SendLinearParameter(float,float)), this, SLOT(ReceiveLinearParameter(float,float)));
     connect(this->parameter_setting, SIGNAL(SendLaplaceParameter(float,float)), this, SLOT(ReceiveLaplaceParameter(float,float)));
     connect(this->parameter_setting, SIGNAL(SendLogParameter(float,float,float)), this, SLOT(ReceiveLogParameter(float,float,float)));
     connect(this->parameter_setting, SIGNAL(SendGammaParameter(float,float,float)), this, SLOT(ReceiveGammaParameter(float,float,float)));
+
+    connect(this->parameter_setting, SIGNAL(SendSpatialTransNNParameter(float,float)), this, SLOT(ReceiveSpatialTransNNParameter(float,float)));
+    connect(this->parameter_setting, SIGNAL(SendSpatialTransBIParameter(float,float)), this, SLOT(ReceiveSpatialTransBIParameter(float,float)));
+    connect(this->parameter_setting, SIGNAL(SendSpatialTransRotatingParameter(float)), this, SLOT(ReceiveSpatialTransRotaingParameter(float)));
+    connect(this->parameter_setting, SIGNAL(SendSpatialTransTranslationParameter(float,float)), this, SLOT(ReceiveSpatailTransTranslationParameter(float,float)));
+
+    // 自定义卷积模板的弹窗
+    this->convolution_setting = new EnhancementsConvolutionSetting(NULL);
+    connect(this->convolution_setting, SIGNAL(SendConvolutionParameter(int)), this, SLOT(ReceiveConvolutionParameter(int)));
 
     this->thresholding_flag = 0;
 }
@@ -174,7 +236,10 @@ void MainUI::FileSave()
     if(this->working_area == NULL)
         return;
 
-    this->working_area->SaveImage(this->working_area->image_path);
+    if(this->working_area->image_type != 4)
+        this->working_area->SaveImage(this->working_area->image_path);
+    else
+        this->FileSaveAs();
 }
 
 void MainUI::FileSaveAs()
@@ -186,7 +251,7 @@ void MainUI::FileSaveAs()
     save_path = QFileDialog::getSaveFileName(this,
         tr("Save Image"), "", tr("Image Files (*.bmp *.jpg *.png);;BMP(*.bmp);;JPG(*.jpg *jpeg);;PNG(*.png)"));
 
-    if (!save_path.isNull())
+    if (!save_path.isNull() && !save_path.isEmpty())
     {
         QFileInfo file_info(save_path);
         QString file_type = file_info.suffix();
@@ -393,6 +458,14 @@ void MainUI::PatternToTxt()
     this->working_area->ToTxt();
 }
 
+void MainUI::Pattern24BitTo256()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->RGB24bitTo256();
+}
+
 void MainUI::HistogramGray()
 {
     if(this->working_area == NULL)
@@ -433,7 +506,8 @@ void MainUI::TransformNegativeFilm()
 
 void MainUI::ReceiveLaplaceParameter(float laplace_a, float laplace_b)
 {
-
+    laplace_a = 0.0f;
+    laplace_b = 0.0f;
 }
 
 void MainUI::TransformLaplace()
@@ -471,3 +545,230 @@ void MainUI::TransformGamma()
     this->parameter_setting->GammaParameterInit();
     this->parameter_setting->show();
 }
+
+void MainUI::ReceiveSpatialTransNNParameter(float size_a, float size_b)
+{
+    this->working_area->SpatialTransNN(size_a, size_b);
+}
+
+void MainUI::SpatialTransNN()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->parameter_setting->SpatialTransNNParameterInit();
+    this->parameter_setting->show();
+}
+
+void MainUI::ReceiveSpatialTransBIParameter(float size_a, float size_b)
+{
+    this->working_area->SpatialTransBI(size_a, size_b);
+}
+
+void MainUI::SpatialTransBI()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->parameter_setting->SpatialTransBIParameterInit();
+    this->parameter_setting->show();
+}
+
+void MainUI::ReceiveSpatialTransRotaingParameter(float size_a)
+{
+    this->working_area->SpatialTransRotaing(size_a);
+}
+
+void MainUI::SpatialTransRotating()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->parameter_setting->SpatailTransRotaingParameterInit();
+    this->parameter_setting->show();
+}
+
+void MainUI::ReceiveSpatailTransTranslationParameter(float size_a, float size_b)
+{
+    this->working_area->SpatialTransTranslation(size_a, size_b);
+}
+
+void MainUI::SpatialTransTranslation()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->parameter_setting->SpatailTransTranslationParameterInit();
+    this->parameter_setting->show();
+}
+
+void MainUI::EnhancementsMean()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->EnhancementsMean();
+}
+
+void MainUI::EnhancementsMedian()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->EnhancementsMedian();
+}
+
+void MainUI::EnhancementsKNeighborhood()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->EnhancementsKNeighborhood();
+}
+
+void MainUI::EnhancementsMinimumMeanVariance()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->EnhancementsMinimumMeanVariance();
+}
+
+void MainUI::EnhancementsRoberts()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->EnhancementsRoberts();
+}
+
+void MainUI::EnhancementsSobel()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->EnhancementsSobel();
+}
+
+void MainUI::EnhancementsLaplace()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->EnhancementsLaplace();
+}
+
+void MainUI::ReceiveConvolutionParameter(int type)
+{
+    if(type == 0)
+        this->working_area->EnhancementsConvolution(this->convolution_setting, type);
+
+    if(type == 1)
+        this->working_area->EnhancementsConvolution(this->convolution_setting, type);
+}
+
+void MainUI::EnhancementsConvolution()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->convolution_setting->Init();
+    this->convolution_setting->show();
+}
+
+void MainUI::EdgeLaplace()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->EdgeLaplace();
+}
+
+void MainUI::EdgeKirsch()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->EdgeKirsch();
+}
+
+void MainUI::EdgeCanny()
+{
+    if(this->working_area == NULL)
+        return;
+}
+
+void MainUI::EdgeTracking()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->EdgeTracking();
+}
+
+void MainUI::EdgeHuogh()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->EdgeHuogh();
+}
+
+void MainUI::CodeHuffmanC()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->CodeHuffmanC();
+}
+
+void MainUI::CodeHuffmanD()
+{
+    if(this->working_area == NULL)
+    {
+        this->working_area = new WorkingArea(this);  // 创建工作区
+        this->working_area->image_type = 4;  // 4 为解码显示类型
+        // 工作区居中显示
+        int working_area_x = (this->width() - this->working_area->width()) / 2;
+        int working_area_y = (this->height() - this->menu->height() - this->tool->height() - this->working_area->height()) / 2;
+        this->working_area->move(working_area_x, this->menu->height() + this->tool->height() + working_area_y);
+        this->working_area->show();
+
+        this->working_area->CodeHuffmanD();
+    }
+    else
+    {
+        this->working_area->image_type = 4;  // 4 为解码显示类型
+        this->working_area->CodeHuffmanD();
+    }
+}
+
+void MainUI::CodeRunsC()
+{
+    if(this->working_area == NULL)
+        return;
+
+    this->working_area->CodeRunsC();
+}
+
+void MainUI::CodeRunsD()
+{
+    if(this->working_area == NULL)
+    {
+        this->working_area = new WorkingArea(this);  // 创建工作区
+        this->working_area->image_type = 4;  // 4 为解码显示类型
+        // 工作区居中显示
+        int working_area_x = (this->width() - this->working_area->width()) / 2;
+        int working_area_y = (this->height() - this->menu->height() - this->tool->height() - this->working_area->height()) / 2;
+        this->working_area->move(working_area_x, this->menu->height() + this->tool->height() + working_area_y);
+        this->working_area->show();
+
+        this->working_area->CodeRunsD();
+    }
+    else
+    {
+        this->working_area->image_type = 4;  // 4 为解码显示类型
+        this->working_area->CodeRunsD();
+    }
+}
+

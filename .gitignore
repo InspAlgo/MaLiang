@@ -1,9 +1,12 @@
 # MaLiang Project
-build-MaLiang/*
+build-MaLiang-Debug/*
 build-MaLiang-Release/*
+MaLiang_M-Release/*
 Release/*
 Debug/*
 MaLiang/res/*
+img/*.md
+img/*.txt
 
 # Prerequisites
 *.d

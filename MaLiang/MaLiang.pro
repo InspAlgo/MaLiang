@@ -28,19 +28,23 @@ SOURCES += \
         mainui.cpp \
     workingarea.cpp \
     grayhistogram.cpp \
-    parametersetting.cpp
+    parametersetting.cpp \
+    enhancementsconvolutionsetting.cpp
 
 HEADERS += \
         mainui.h \
     workingarea.h \
     grayhistogram.h \
-    parametersetting.h
+    parametersetting.h \
+    enhancementsconvolutionsetting.h \
+    huffman_tree.h
 
 FORMS += \
         mainui.ui \
     workingarea.ui \
     grayhistogram.ui \
-    parametersetting.ui
+    parametersetting.ui \
+    enhancementsconvolutionsetting.ui
 
 RESOURCES += \
     res_mainui.qrc

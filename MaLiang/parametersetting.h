@@ -20,6 +20,11 @@ public:
     void LogParameterInit();
     void GammaParameterInit();
 
+    void SpatialTransNNParameterInit();
+    void SpatialTransBIParameterInit();
+    void SpatailTransRotaingParameterInit();
+    void SpatailTransTranslationParameterInit();
+
 private slots:
     void on_pushButton_parameter_OK_clicked();
 
@@ -28,6 +33,11 @@ signals:
     void SendLaplaceParameter(float, float);
     void SendLogParameter(float, float, float);
     void SendGammaParameter(float, float, float);
+
+    void SendSpatialTransNNParameter(float, float);
+    void SendSpatialTransBIParameter(float, float);
+    void SendSpatialTransRotatingParameter(float);
+    void SendSpatialTransTranslationParameter(float, float);
 
 private:
     void InitAllParameterSetting();
